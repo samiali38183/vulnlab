@@ -1,0 +1,11 @@
+$ sinkline scan vulnerable --no-color
+[HIGH] SL-SSRF-001 A10:2021 CWE-918  app.py:23:24
+  SSRF: tainted URL fetched server-side
+  flask.request.args reaches requests.get without a sanitizer for CWE-918.
+  â”Œ source     app.py:19  url = request.args.get("url", "")  # flask.request.args
+  â”‚ propagate  app.py:19  url = request.args.get("url", "")  # .get()
+  â”” sink       app.py:23  upstream = requests.get(url, timeout=3)  # requests.get
+  fix: Allow-list hosts/schemes, resolve DNS and reject private ranges, disable redirects.
+
+1 finding(s) in 1 file(s), 6 function(s) summarized
+by OWASP: A10:2021 Server-Side Request Forgery: 1

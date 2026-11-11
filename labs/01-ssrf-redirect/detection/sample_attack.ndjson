@@ -1,0 +1,2 @@
+{"timestamp": "2026-11-11T19:19:16.220+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/preview", "cs-uri-query": "url=http%3A%2F%2F127.0.0.2%3A30473%2Flatest%2Fmeta-data%2Fcredentials", "sc-status": 403, "session": "-", "object_id": "-"}
+{"timestamp": "2026-11-11T19:19:16.241+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/preview", "cs-uri-query": "url=http%3A%2F%2F127.0.0.1%3A30474%2Fgo%3Fto%3Dhttp%253A%252F%252F127.0.0.2%253A30473%252Flatest%252Fmeta-data%252Fcredentials", "sc-status": 200, "session": "-", "object_id": "-"}

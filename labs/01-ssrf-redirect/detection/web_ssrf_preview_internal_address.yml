@@ -1,0 +1,28 @@
+title: URL preview request names an internal or metadata address
+id: 5b0e7c1a-3f52-4c0e-9a57-0d6b7f1e2a11
+status: experimental
+description: >
+  Flags requests to the lab preview endpoint whose url parameter contains a literal internal or
+  metadata address, whether directly or nested inside a redirect URL. The lab uses 127.0.0.2 as
+  its stand-in internal address. This catches the attempt, not the outcome: it fires on both the
+  vulnerable and the fixed service, and it misses internal targets reached by hostname.
+references:
+  - https://cwe.mitre.org/data/definitions/918.html
+author: vulnlab
+date: 2026-11-11
+tags:
+  - attack.t1190
+logsource:
+  category: webserver
+detection:
+  selection_path:
+    cs-uri-stem: /preview
+  selection_nested:
+    cs-uri-query|contains:
+      - '169.254.169.254'
+      - '127.0.0.2'
+      - 'metadata.google.internal'
+  condition: selection_path and selection_nested
+falsepositives:
+  - Administrators testing the preview feature against internal addresses
+level: medium

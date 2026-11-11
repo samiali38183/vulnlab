@@ -1,0 +1,24 @@
+title: Product API sort parameter is not a plain column name
+id: 8c1d4a52-6e7b-4f0a-b3d9-2a5e91c7f402
+status: experimental
+description: >
+  Flags requests to the lab product API whose sort parameter contains anything other than a plain
+  identifier, such as parentheses, whitespace, quotes or SQL keywords. It catches attempts, not
+  outcomes: it fires on the fixed service as well, where the request is rejected with a 400.
+references:
+  - https://cwe.mitre.org/data/definitions/89.html
+author: vulnlab
+date: 2026-11-11
+tags:
+  - attack.t1190
+logsource:
+  category: webserver
+detection:
+  selection_path:
+    cs-uri-stem: /api/products
+  selection_sort:
+    cs-uri-query|re: '(^|&)sort=[^&]*[^A-Za-z0-9_&]'
+  condition: selection_path and selection_sort
+falsepositives:
+  - A client that legitimately sends a multi-column sort value such as name,price
+level: medium

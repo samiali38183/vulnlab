@@ -1,0 +1,4 @@
+{"timestamp": "2026-11-11T19:20:30.896+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/products", "cs-uri-query": "sort=name", "sc-status": 200, "session": "-", "object_id": "-"}
+{"timestamp": "2026-11-11T19:20:30.900+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/products", "cs-uri-query": "sort=price", "sc-status": 200, "session": "-", "object_id": "-"}
+{"timestamp": "2026-11-11T19:20:30.903+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/products", "cs-uri-query": "sort=price&order=desc", "sc-status": 200, "session": "-", "object_id": "-"}
+{"timestamp": "2026-11-11T19:20:30.906+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/products", "cs-uri-query": "sort=name&q=an", "sc-status": 200, "session": "-", "object_id": "-"}

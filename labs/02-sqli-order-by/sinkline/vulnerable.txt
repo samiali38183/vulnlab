@@ -1,0 +1,12 @@
+$ sinkline scan vulnerable --no-color
+[CRITICAL] SL-SQLI-001 A03:2021 CWE-89  app.py:19:24
+  SQL built from tainted data
+  flask.request.args reaches sqlite3.Connection.execute without a sanitizer for CWE-89.
+  â”Œ source     app.py:13  sort = request.args.get("sort", "name")  # flask.request.args
+  â”‚ propagate  app.py:13  sort = request.args.get("sort", "name")  # .get()
+  â”‚ propagate  app.py:16  query = f"SELECT id, name, price FROM products WHERE name LIKE ? ORDER BY {sort} {direction}"  # f-string
+  â”” sink       app.py:19  rows = conn.execute(query, (needle,)).fetchall()  # sqlite3.Connection.execute
+  fix: Use parameterized queries: conn.execute('... WHERE id = ?', (user_id,))
+
+1 finding(s) in 1 file(s), 4 function(s) summarized
+by OWASP: A03:2021 Injection: 1

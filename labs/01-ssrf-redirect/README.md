@@ -20,9 +20,9 @@ Lab layout, all on loopback, started by the tests:
 The check runs once, on the URL the user supplied:
 
 ```python
-if not host_allowed(url):          # checked here
+if not host_allowed(url):  # checked here
     ...
-upstream = requests.get(url, timeout=3)   # app.py:23, follows redirects by default
+upstream = requests.get(url, timeout=3)  # app.py:23, follows redirects by default
 ```
 
 `requests.get` follows redirects on its own. The allow-list never sees the second URL. Any allowed

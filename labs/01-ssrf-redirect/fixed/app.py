@@ -30,9 +30,7 @@ def create_app(settings: dict | None = None) -> Flask:
     def fetch(url: str) -> requests.Response:
         for _ in range(MAX_HOPS + 1):
             host_header, pinned = resolve_allowed(url)
-            upstream = requests.get(
-                pinned, headers={"Host": host_header}, allow_redirects=False, timeout=3
-            )
+            upstream = requests.get(pinned, headers={"Host": host_header}, allow_redirects=False, timeout=3)
             if not upstream.is_redirect:
                 return upstream
             url = urljoin(url, upstream.headers["Location"])

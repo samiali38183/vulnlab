@@ -22,7 +22,7 @@ Authentication is checked on the read-by-id route but authorization is not:
 
 ```python
 def get_invoice(object_id: int):
-    if current_user() is None:          # who are you
+    if current_user() is None:  # who are you
         return jsonify(error="login required"), 401
     ...
     return jsonify(invoices[object_id])  # line 38: no check that it is yours

@@ -97,3 +97,22 @@ def _correlate(
                 alerts.append(Alert(str(rule.title), key, window))
                 break
     return alerts
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Replay a recorded access log through a Sigma rule")
+    parser.add_argument("rule", type=Path)
+    parser.add_argument("log", type=Path)
+    args = parser.parse_args(argv)
+    events = read_ndjson(args.log)
+    alerts = replay(args.rule, events)
+    print(f"{args.log.name}: {len(events)} events, {len(alerts)} alert(s)")
+    for alert in alerts:
+        print(f"  ALERT {alert.rule!r}: {len(alert.events)} matching event(s)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

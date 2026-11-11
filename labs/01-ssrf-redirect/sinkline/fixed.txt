@@ -2,10 +2,10 @@ $ sinkline scan fixed --no-color
 [HIGH] SL-SSRF-001 A10:2021 CWE-918  app.py:42:24
   SSRF: tainted URL fetched server-side
   flask.request.args reaches requests.get (inside fetch, app.py:33) without a sanitizer for CWE-918.
-  â”Œ source     app.py:42  upstream = fetch(request.args.get("url", ""))  # flask.request.args
-  â”‚ propagate  app.py:42  upstream = fetch(request.args.get("url", ""))  # .get()
-  â”‚ call       app.py:42  upstream = fetch(request.args.get("url", ""))  # passed as `url` to fetch()
-  â”” sink       app.py:33  upstream = requests.get(pinned, headers={"Host": host_header}, allow_redirects=False, timeout=3)  # requests.get inside fetch()
+  ┌ source     app.py:42  upstream = fetch(request.args.get("url", ""))  # flask.request.args
+  │ propagate  app.py:42  upstream = fetch(request.args.get("url", ""))  # .get()
+  │ call       app.py:42  upstream = fetch(request.args.get("url", ""))  # passed as `url` to fetch()
+  └ sink       app.py:33  upstream = requests.get(pinned, headers={"Host": host_header}, allow_redirects=False, timeout=3)  # requests.get inside fetch()
   fix: Allow-list hosts/schemes, resolve DNS and reject private ranges, disable redirects.
 
 1 finding(s) in 1 file(s), 8 function(s) summarized

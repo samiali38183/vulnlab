@@ -2,12 +2,12 @@ $ sinkline scan fixed --no-color
 [CRITICAL] SL-SQLI-001 A03:2021 CWE-89  app.py:22:20
   SQL built from tainted data
   flask.request.args reaches sqlite3.Connection.execute without a sanitizer for CWE-89.
-  â”Œ source     app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # flask.request.args
-  â”‚ propagate  app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # .get()
-  â”‚ call       app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # SORT_COLUMNS.get() (unknown; assumed passthrough)
-  â”‚ propagate  app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # assigned to `column`
-  â”‚ propagate  app.py:20  query = f"SELECT id, name, price FROM products WHERE name LIKE ? ORDER BY {column} {direction}"  # f-string
-  â”” sink       app.py:22  rows = conn.execute(query, (needle,)).fetchall()  # sqlite3.Connection.execute
+  ┌ source     app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # flask.request.args
+  │ propagate  app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # .get()
+  │ call       app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # SORT_COLUMNS.get() (unknown; assumed passthrough)
+  │ propagate  app.py:15  column = SORT_COLUMNS.get(request.args.get("sort", "name"))  # assigned to `column`
+  │ propagate  app.py:20  query = f"SELECT id, name, price FROM products WHERE name LIKE ? ORDER BY {column} {direction}"  # f-string
+  └ sink       app.py:22  rows = conn.execute(query, (needle,)).fetchall()  # sqlite3.Connection.execute
   fix: Use parameterized queries: conn.execute('... WHERE id = ?', (user_id,))
 
 1 finding(s) in 1 file(s), 4 function(s) summarized

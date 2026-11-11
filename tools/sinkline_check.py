@@ -20,7 +20,7 @@ VARIANTS = ("vulnerable", "fixed")
 
 def scan(lab: Path, variant: str, fmt: str) -> str:
     args = ["sinkline", "scan", variant, "--no-color", "--format", fmt]
-    return subprocess.run(args, cwd=lab, capture_output=True, text=True, check=True).stdout
+    return subprocess.run(args, cwd=lab, capture_output=True, text=True, encoding="utf-8", check=True).stdout
 
 
 def summarize(report_json: str) -> dict:

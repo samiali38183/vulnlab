@@ -47,9 +47,17 @@ def read_ndjson(path: Path) -> list[dict[str, Any]]:
 def replay(rule_path: Path, events: list[dict[str, Any]]) -> list[Alert]:
     collection = SigmaCollection.from_yaml(rule_path.read_text(encoding="utf-8"))
     base = {r.name or str(r.id): r for r in collection.rules if isinstance(r, SigmaRule)}
+    referenced = {
+        ref.reference
+        for rule in collection.rules
+        if isinstance(rule, SigmaCorrelationRule)
+        for ref in rule.rules
+    }
     alerts: list[Alert] = []
     for rule in collection.rules:
         if isinstance(rule, SigmaRule):
+            if (rule.name or str(rule.id)) in referenced:
+                continue
             compiled = compile_rule(rule)
             hits = [e for e in events if compiled.matches(e)]
             if hits:

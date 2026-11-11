@@ -1,0 +1,11 @@
+{"timestamp": "2026-11-11T19:22:05.761+00:00", "c-ip": "127.0.0.1", "cs-method": "POST", "cs-uri-stem": "/api/login", "cs-uri-query": "", "sc-status": 200, "session": "-", "object_id": "-"}
+{"timestamp": "2026-11-11T19:22:05.765+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": "-"}
+{"timestamp": "2026-11-11T19:22:05.767+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/4", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 4}
+{"timestamp": "2026-11-11T19:22:05.771+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/1", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 1}
+{"timestamp": "2026-11-11T19:22:05.773+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/2", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 2}
+{"timestamp": "2026-11-11T19:22:05.775+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/3", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 3}
+{"timestamp": "2026-11-11T19:22:05.778+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/4", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 4}
+{"timestamp": "2026-11-11T19:22:05.780+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/5", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 5}
+{"timestamp": "2026-11-11T19:22:05.807+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/6", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 6}
+{"timestamp": "2026-11-11T19:22:05.810+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/7", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 7}
+{"timestamp": "2026-11-11T19:22:05.813+00:00", "c-ip": "127.0.0.1", "cs-method": "GET", "cs-uri-stem": "/api/invoices/8", "cs-uri-query": "", "sc-status": 200, "session": "d9ca578c5494", "object_id": 8}

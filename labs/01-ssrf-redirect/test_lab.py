@@ -43,6 +43,7 @@ def test_fixed_service_does_not_return_internal_marker(tmp_path):
         assert chained.status_code == 403
         assert running.canary not in chained.text
         assert not running.internal_log.exists(), "the internal service must never be contacted"
+        assert replay(RULE, read_ndjson(running.log_path)), "the attempt is still visible in the log"
 
 
 def test_fixed_service_still_previews_pages_and_follows_allowed_redirects(tmp_path):

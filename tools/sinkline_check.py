@@ -38,9 +38,7 @@ def capture(lab: Path) -> None:
     expected = {"command": "sinkline scan <variant> --no-color (run from the lab directory)"}
     for variant in VARIANTS:
         text = scan(lab, variant, "text")
-        (out / f"{variant}.txt").write_text(
-            f"$ sinkline scan {variant} --no-color\n{text}", encoding="utf-8"
-        )
+        (out / f"{variant}.txt").write_text(f"$ sinkline scan {variant} --no-color\n{text}", encoding="utf-8")
         expected[variant] = summarize(scan(lab, variant, "json"))
     (out / "expected.json").write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
 

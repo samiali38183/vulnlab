@@ -1,0 +1,42 @@
+title: Invoice read by id
+id: 3e9f6a10-7d24-4b8e-a1c5-5f0b2d9e7a03
+name: invoice_read_by_id
+status: experimental
+description: Base rule for the correlation below. A GET of one invoice by id, whatever the outcome.
+logsource:
+  category: webserver
+detection:
+  selection:
+    cs-method: GET
+    cs-uri-stem|re: '^/api/invoices/[0-9]+$'
+  condition: selection
+level: informational
+---
+title: One session reads many different invoice ids in a short time
+id: 9a47c2e1-0b6d-4f35-8c1e-7d3a5b6f1e04
+status: experimental
+description: >
+  Flags a single session (hashed Authorization header) that requests five or more distinct invoice
+  ids within one minute. Object-level authorization bugs have no signature in a single request, so
+  the behavior around them is the only thing a log rule can see. The rule counts distinct ids; it
+  does not check that they are sequential. It fires on the fixed service too, where the requests
+  return 404.
+references:
+  - https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization
+author: vulnlab
+date: 2026-11-11
+tags:
+  - attack.t1190
+correlation:
+  type: value_count
+  rules:
+    - invoice_read_by_id
+  group-by:
+    - session
+  timespan: 1m
+  condition:
+    gte: 5
+    field: object_id
+level: medium
+falsepositives:
+  - A client that loads many of its own invoices in a burst, such as a bulk export screen

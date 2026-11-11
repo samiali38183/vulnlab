@@ -1,0 +1,13 @@
+{
+  "command": "sinkline scan <variant> --no-color (run from the lab directory)",
+  "vulnerable": {
+    "count": 0,
+    "findings": [],
+    "version": "0.5.0"
+  },
+  "fixed": {
+    "count": 0,
+    "findings": [],
+    "version": "0.5.0"
+  }
+}

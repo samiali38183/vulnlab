@@ -46,9 +46,13 @@ def test_vulnerable_sort_parameter_lets_another_table_decide_the_order(tmp_path)
 @pytest.mark.parametrize("make_value", [oracle, lambda c: f"{c}", lambda c: f"price,{oracle(c)}"])
 def test_fixed_endpoint_rejects_non_column_sort_values(tmp_path, make_value):
     with lab.start("fixed", tmp_path) as running:
-        response = running.get(sort=make_value(running.canary[0]))
+        value = make_value(running.canary[0])
+        response = running.get(sort=value)
         assert response.status_code == 400
         assert running.canary not in response.text
+        if not value.isidentifier():
+            alerts = replay(RULE, read_ndjson(running.log_path))
+            assert alerts, "the attempt is still visible in the log"
 
 
 def test_fixed_endpoint_keeps_normal_sorting_and_filtering(tmp_path):

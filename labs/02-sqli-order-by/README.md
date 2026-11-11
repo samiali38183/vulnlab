@@ -17,7 +17,7 @@ placeholders cannot stand in for identifiers, so the sort column is pasted into 
 
 ```python
 query = f"SELECT id, name, price FROM products WHERE name LIKE ? ORDER BY {sort} {direction}"  # line 16
-rows = conn.execute(query, (needle,)).fetchall()                                               # line 19
+rows = conn.execute(query, (needle,)).fetchall()  # line 19
 ```
 
 `sort` comes straight from the query string. The `LIKE ?` parameter gives a false sense that the

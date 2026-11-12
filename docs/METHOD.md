@@ -47,7 +47,9 @@ Recorded logs are real output of the tests. To refresh them: `VULNLAB_RECORD=1 p
 
 `python tools/sinkline_check.py --capture` runs `sinkline scan` on each variant, writes the text
 output and `expected.json` (rule ids, files, lines, tool version). CI runs
-`python tools/sinkline_check.py` and fails if any scan differs. If sinkline reports something
+`python tools/sinkline_check.py` and fails if any scan differs. It runs `python -m sinkline` of the
+active interpreter (never a `sinkline` found on PATH) and exits 2 before scanning if the installed
+version differs from the one pinned in `pyproject.toml`. If sinkline reports something
 unflattering, the lab is not changed; the README records it as a sinkline limitation.
 
 ## Adding a lab

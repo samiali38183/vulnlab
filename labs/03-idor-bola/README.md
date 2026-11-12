@@ -8,7 +8,8 @@ and nothing here is a disclosure or a CVE.
 `vulnerable/app.py` is a small JSON invoice API with token login. Invoices have small sequential
 integer ids and an owner. Routes:
 
-- `POST /api/login` returns a bearer token.
+- `POST /api/login` returns a bearer token for a known user with the right password. An unknown user,
+  a missing or non-string field, or a body that is not a JSON object gets 401.
 - `GET /api/invoices` lists the caller's own invoices. It filters by owner.
 - `GET /api/invoices/<id>` returns one invoice.
 - `PATCH /api/invoices/<id>` updates the memo. It checks the owner and returns 404 otherwise.
@@ -56,11 +57,19 @@ def owned_invoice(object_id: int) -> dict:
     return invoice
 ```
 
-It answers 404 both for "does not exist" and "exists but is not yours", so the response does not
-confirm which ids are in use. Because the check lives in one place, a new route that calls it
+It authenticates first, then answers 404 both for "does not exist" and "exists but is not yours".
+So a caller with no valid token gets the same 401 for every id, and a logged-in caller gets the same
+404 for a missing id and for someone else's id: the responses do not confirm which ids are in use to
+either kind of caller. (Before 0.1.1 the ownership comparison ran first and skipped authentication
+for missing ids, so a caller with no token got 401 for an existing id and 404 for a missing one.) Because the check lives in one place, a new route that calls it
 inherits the rule, and the tests assert the behavior per route so a route that skips it fails.
 Regression tests also confirm owners can still read and update their own records and that
-unauthenticated requests get 401.
+unauthenticated requests get 401
+(`test_anonymous_callers_cannot_tell_existing_ids_from_missing_ones` compares an existing and a
+missing id on read and update). Login is covered by
+`test_login_rejects_unknown_users_and_malformed_bodies` for both variants: before 0.1.1 an unknown
+user with a missing or `null` password was issued a token (`None != None` is false) and a malformed
+body could crash the handler. That was incidental to the lab's bug and is fixed in both variants.
 
 ## Detection
 

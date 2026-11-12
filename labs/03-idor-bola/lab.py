@@ -30,6 +30,9 @@ class Running:
         token = self.client.post(f"{self.target}/api/login", json=body).json()["token"]
         return {"Authorization": f"Bearer {token}"}
 
+    def raw_login(self, body):
+        return self.client.post(f"{self.target}/api/login", json=body)
+
     def get(self, path: str, headers: dict[str, str] | None = None):
         return self.client.get(f"{self.target}{path}", headers=headers)
 

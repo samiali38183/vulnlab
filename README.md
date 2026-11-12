@@ -32,15 +32,17 @@ from their GitHub tags.
 ## Labs
 
 Results below are from runs on 2026-11-11 (Windows 11, Python 3.12.2, pytest 9.2.0, sinkline
-0.5.0, tripline 0.2.1, pySigma 2.1.0). CI runs the same checks on Linux.
+0.5.0, tripline 0.2.1, pySigma 2.1.0). CI runs the same checks on Linux, including `ruff format --check`.
 
 | Lab | Bug class | CWE | Proof (vulnerable) | Fix verified | sinkline vulnerable / fixed | Detection rule |
 |---|---|---|---|---|---|---|
-| [01-ssrf-redirect](labs/01-ssrf-redirect) | SSRF through a redirect on an allowed host | 918 | preview endpoint returned the internal service's canary | yes, 4 tests | 1 finding (correct) / 1 finding (false positive) | Sigma rule, replays: 1 alert on attack log, 0 on benign |
-| [02-sqli-order-by](labs/02-sqli-order-by) | SQL injection in ORDER BY (dynamic identifier) | 89 | sort value made another table decide the row order | yes, 6 tests | 1 finding (correct) / 1 finding (false positive) | Sigma rule, replays: 1 alert on attack log, 0 on benign |
-| [03-idor-bola](labs/03-idor-bola) | Missing object-level authorization | 639 | another user's invoice returned with the canary | yes, 7 tests | 0 / 0 (expected: not a taint flow) | Sigma correlation rule (distinct ids per session), replays: 1 / 0 |
+| [01-ssrf-redirect](labs/01-ssrf-redirect) | SSRF through a redirect on an allowed host | 918 | preview endpoint returned the internal service's canary | yes, 26 tests | 1 finding (correct) / 1 finding (false positive) | Sigma rule, replays: 1 alert on attack log, 0 on benign |
+| [02-sqli-order-by](labs/02-sqli-order-by) | SQL injection in ORDER BY (dynamic identifier) | 89 | sort value made another table decide the row order | yes, 9 tests | 1 finding (correct) / 1 finding (false positive) | Sigma rule, replays: 1 alert on attack log, 0 on benign |
+| [03-idor-bola](labs/03-idor-bola) | Missing object-level authorization | 639 | another user's invoice returned with the canary | yes, 37 tests | 0 / 0 (expected: not a taint flow) | Sigma correlation rule (distinct ids per session), replays: 1 / 0 |
 
-26 more tests in `tests/` cover the loopback guard and the harness. Total: 43 passing.
+65 more tests in `tests/` cover the loopback guard and harness (26), the recorded sinkline captures
+(13), the Sigma replay's correlation logic (13), the rule files (7) and the sinkline check tool (6).
+The lab columns above count every test in each lab directory. Total: 137 passing.
 
 Things worth reading in the results:
 

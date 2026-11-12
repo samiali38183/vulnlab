@@ -55,6 +55,15 @@ def test_fixed_endpoint_rejects_non_column_sort_values(tmp_path, make_value):
             assert alerts, "the attempt is still visible in the log"
 
 
+@pytest.mark.parametrize("sort", ["Name", "1", "name,price"])
+def test_fixed_endpoint_is_stricter_than_the_vulnerable_one_on_legitimate_looking_values(tmp_path, sort):
+    """Documented behavior change: the allow-list is exact, so these ORDER BY forms are refused."""
+    with lab.start("vulnerable", tmp_path / "v") as running:
+        assert running.get(sort=sort).status_code == 200
+    with lab.start("fixed", tmp_path / "f") as running:
+        assert running.get(sort=sort).status_code == 400
+
+
 def test_fixed_endpoint_keeps_normal_sorting_and_filtering(tmp_path):
     with lab.start("fixed", tmp_path) as running:
         assert running.product_ids(sort="name") == lab.NAME_ORDER

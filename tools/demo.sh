@@ -11,13 +11,13 @@ step "1. vulnerable service: the preview endpoint returns the internal service's
 python -m pytest -v -s -p no:cacheprovider "$LAB/test_lab.py" -k vulnerable_service
 
 step "2. what sinkline reports on the vulnerable version"
-(cd "$LAB" && sinkline scan vulnerable --no-color)
+(cd "$LAB" && python -m sinkline scan vulnerable --no-color)
 
 step "3. fixed service: the same request is refused and the internal service is never contacted"
 python -m pytest -v -s -p no:cacheprovider "$LAB/test_lab.py" -k "fixed_service"
 
 step "4. what sinkline reports on the fixed version (a documented false positive)"
-(cd "$LAB" && sinkline scan fixed --no-color)
+(cd "$LAB" && python -m sinkline scan fixed --no-color)
 
 step "5. replay the Sigma rule over the recorded logs"
 python -m vulnlab_common.replay "$RULE" "$LAB/detection/sample_attack.ndjson"

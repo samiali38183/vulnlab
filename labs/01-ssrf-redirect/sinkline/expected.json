@@ -17,7 +17,7 @@
       {
         "rule_id": "SL-SSRF-001",
         "file": "app.py",
-        "line": 42
+        "line": 62
       }
     ],
     "version": "0.5.0"

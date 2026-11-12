@@ -50,9 +50,19 @@ is never contacted.
    differently between the check and the connection (DNS rebinding) cannot change the target.
 3. Only `http` is accepted in this lab. Pinning an address for `https` needs a custom adapter that
    keeps SNI and certificate checks on the original hostname; that is not done here.
+4. Input that is not a usable http URL is answered with a clean `400 {"error": "invalid url"}` on the
+   first URL and on every redirect hop: an invalid or zero port, an unterminated IPv6 literal, an
+   empty or missing host, credentials in the URL (`user@host`, which includes the
+   `http://allowed@other/` look-alike trick), a non-http scheme, and a URL longer than 2048
+   characters. Well-formed URLs for hosts or addresses that are not approved still get `403`.
 
 Why it works: the property being enforced is "every address this server connects to was approved",
 and that is checked at the point of connection for each hop instead of once at the front.
+
+`test_fixed_service_answers_400_to_every_malformed_url` covers each malformed class above, and
+`test_address_pinning_refuses_a_host_whose_address_is_not_approved` fails if the resolved-address
+check is removed: it allows the host name but approves a different address, so only the pinning
+check can refuse it. (Removing that check was run as a mutation to confirm the test fails.)
 
 `test_fixed_service_still_previews_pages_and_follows_allowed_redirects` guards against fixing it by
 breaking the feature: a redirect to an allowed page still works.
@@ -84,7 +94,7 @@ in `sinkline/`.
 | Version | Result |
 |---|---|
 | vulnerable | 1 finding, SL-SSRF-001 (CWE-918), `requests.get` at `app.py:23`, source `request.args` |
-| fixed | 1 finding, SL-SSRF-001, same flow reported through `fetch()` at `app.py:33` |
+| fixed | 1 finding, SL-SSRF-001, same flow reported through `fetch()` at `app.py:53` |
 
 The vulnerable finding is correct. The fixed one is a false positive: sinkline does not model a
 project-specific validator, so it reports the flow as unsanitized. This is documented as a sinkline

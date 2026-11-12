@@ -31,8 +31,9 @@ depends on a condition about the `api_keys` table. The response is still a norma
 its row order switches depending on whether the condition holds: with a correct guess about the
 first character of the canary the rows come back in price order, with a wrong guess in name order.
 That is the whole point of the proof: data from a table the endpoint never returns changes what the
-endpoint returns, so it can be read one yes/no answer at a time. The test stops at demonstrating the
-oracle; it does not recover the full canary.
+endpoint returns. Repeating the question with other guesses would reveal the value one yes/no answer
+at a time; that follows from the oracle but is an inference, not something the test does. The test
+stops at demonstrating the first-character oracle; it does not recover the canary.
 
 The same inputs against the fixed service get a 400 and no change in the output
 (`test_fixed_endpoint_rejects_non_column_sort_values`).
@@ -51,6 +52,12 @@ if column is None:
 The string interpolated into the SQL is the dictionary's value, which the application wrote, never
 the caller's text. This is the approach OWASP recommends for identifiers that cannot be
 parameterized.
+
+The allow-list is exact, so the fixed endpoint is stricter than the vulnerable one: `Name` (wrong
+case), `1` (a column position) and `name,price` (a multi-column sort) were accepted before and now
+get 400. That is a deliberate behavior change; a client that needs multi-column sorting would need
+the map extended. `test_fixed_endpoint_is_stricter_than_the_vulnerable_one_on_legitimate_looking_values`
+pins it down.
 
 Regression tests: injected sort values are rejected with 400 and nothing from `api_keys` appears;
 sorting by each allowed column in both directions and filtering with `q` still work.

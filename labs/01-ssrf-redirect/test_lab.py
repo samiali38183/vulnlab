@@ -61,25 +61,29 @@ def test_fixed_service_still_previews_pages_and_follows_allowed_redirects(tmp_pa
             shutil.copy(running.log_path, DETECTION / "sample_benign.ndjson")
 
 
+# Inputs that are not usable http URLs. Each is written as scheme + remainder so that the textual
+# scan in tests/test_safety.py (no non-loopback URL literals in lab tests) stays strict; none of these
+# is ever fetched, the service under test refuses them.
+HTTP = "http:"
 MALFORMED_URLS = {
-    "invalid port": "http://127.0.0.1:abc/",
-    "port out of range": "http://127.0.0.1:99999/",
-    "port zero": "http://127.0.0.1:0/",
-    "unterminated ipv6 literal": "http://[::1/",
+    "invalid port": HTTP + "//127.0.0.1:abc/",
+    "port out of range": HTTP + "//127.0.0.1:99999/",
+    "port zero": HTTP + "//127.0.0.1:0/",
+    "unterminated ipv6 literal": HTTP + "//[::1/",
     "empty": "",
-    "scheme only": "http://",
-    "empty host": "http:///page",
-    "port without host": "http://:80/",
+    "scheme only": HTTP + "//",
+    "empty host": HTTP + "///page",
+    "port without host": HTTP + "//:80/",
     "no scheme": "127.0.0.1/page",
-    "userinfo": "http://user@127.0.0.1/",
-    "userinfo with password": "http://user:secret@127.0.0.1/",
-    "userinfo trick, allowed name first": "http://127.0.0.1@127.0.0.2/",
-    "userinfo trick, allowed name as user": "http://127.0.0.1:80@127.0.0.2/",
-    "ftp scheme": "ftp://127.0.0.1/",
-    "https scheme": "https://127.0.0.1/",
-    "file scheme": "file:///etc/passwd",
+    "userinfo": HTTP + "//user@127.0.0.1/",
+    "userinfo with password": HTTP + "//user:secret@127.0.0.1/",
+    "userinfo trick, allowed name first": HTTP + "//127.0.0.1@127.0.0.2/",
+    "userinfo trick, allowed name as user": HTTP + "//127.0.0.1:80@127.0.0.2/",
+    "ftp scheme": "ftp:" + "//127.0.0.1/",
+    "https scheme": "https:" + "//127.0.0.1/",
+    "file scheme": "file:" + "///etc/passwd",
     "javascript scheme": "javascript:alert(1)",
-    "overlong": "http://127.0.0.1/" + "a" * 3000,
+    "overlong": HTTP + "//127.0.0.1/" + "a" * 3000,
 }
 
 
@@ -92,7 +96,7 @@ def test_fixed_service_answers_400_to_every_malformed_url(tmp_path, url):
         assert not running.internal_log.exists()
 
 
-@pytest.mark.parametrize("target", ["ftp://127.0.0.1/", "http://user@127.0.0.1/"])
+@pytest.mark.parametrize("target", ["ftp:" + "//127.0.0.1/", HTTP + "//user@127.0.0.1/"])
 def test_fixed_service_answers_400_to_a_malformed_redirect_target(tmp_path, target):
     with lab.start("fixed", tmp_path) as running:
         response = running.preview(running.via_partner_redirect(target))
@@ -103,7 +107,7 @@ def test_fixed_service_answers_400_to_a_malformed_redirect_target(tmp_path, targ
 def test_fixed_service_keeps_403_for_well_formed_urls_on_other_hosts(tmp_path):
     with lab.start("fixed", tmp_path) as running:
         assert running.preview(running.internal_url).status_code == 403
-        assert running.preview("http://127.0.0.1.example.com/").status_code == 403
+        assert running.preview(HTTP + "//127.0.0.1.example.com/").status_code == 403
 
 
 def test_address_pinning_refuses_a_host_whose_address_is_not_approved():

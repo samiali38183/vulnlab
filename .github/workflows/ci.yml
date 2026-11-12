@@ -29,6 +29,8 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Lint
         run: ruff check .
+      - name: Format
+        run: ruff format --check .
       - name: Tests (proofs, fixes, detection replay, safety)
         run: pytest -q
       - name: sinkline results match the documented ones

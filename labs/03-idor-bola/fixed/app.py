@@ -17,8 +17,9 @@ def create_app(settings: dict) -> Flask:
         return user
 
     def owned_invoice(object_id: int) -> dict:
+        user = current_user()  # authenticate before any lookup, so a missing id cannot be told apart
         invoice = invoices.get(object_id)
-        if invoice is None or invoice["owner"] != current_user():
+        if invoice is None or invoice["owner"] != user:
             abort(404)
         return invoice
 
@@ -29,11 +30,14 @@ def create_app(settings: dict) -> Flask:
 
     @app.post("/api/login")
     def login():
-        body = request.get_json(silent=True) or {}
-        if settings["users"].get(body.get("user")) != body.get("password"):
+        body = request.get_json(silent=True)
+        body = body if isinstance(body, dict) else {}
+        user, password = body.get("user"), body.get("password")
+        expected = settings["users"].get(user) if isinstance(user, str) else None
+        if expected is None or not isinstance(password, str) or password != expected:
             return jsonify(error="bad credentials"), 401
         token = secrets.token_hex(16)
-        sessions[token] = body["user"]
+        sessions[token] = user
         return jsonify(token=token)
 
     @app.get("/api/invoices")

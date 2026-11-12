@@ -68,6 +68,52 @@ def test_requests_without_a_login_are_rejected(tmp_path, variant):
         assert running.get("/api/invoices").status_code == 401
 
 
+@pytest.mark.parametrize("variant", ["vulnerable", "fixed"])
+def test_anonymous_callers_cannot_tell_existing_ids_from_missing_ones(tmp_path, variant):
+    with lab.start(variant, tmp_path) as running:
+        missing = max(lab.OWNERS) + 991
+        for method in ("get", "patch"):
+            call = getattr(running.client, method)
+            kwargs = {"json": {"memo": "x"}} if method == "patch" else {}
+            existing = call(f"{running.target}/api/invoices/{lab.VICTIM_ID}", **kwargs)
+            absent = call(f"{running.target}/api/invoices/{missing}", **kwargs)
+            assert existing.status_code == absent.status_code == 401
+            assert existing.json() == absent.json()
+
+
+@pytest.mark.parametrize("variant", ["vulnerable", "fixed"])
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"user": "nobody", "password": None},
+        {"user": "nobody"},
+        {"user": "nobody", "password": ""},
+        {"user": None, "password": None},
+        {},
+        [],
+        "text",
+        {"user": ["alice"], "password": "x"},
+        {"user": {"a": 1}, "password": "x"},
+    ],
+    ids=repr,
+)
+def test_login_rejects_unknown_users_and_malformed_bodies(tmp_path, variant, body):
+    with lab.start(variant, tmp_path) as running:
+        response = running.raw_login(body)
+        assert response.status_code == 401
+        assert "token" not in response.text
+
+
+@pytest.mark.parametrize("variant", ["vulnerable", "fixed"])
+@pytest.mark.parametrize("password", [None, 0, 123, ["x"], "wrong"], ids=repr)
+def test_login_rejects_known_user_with_missing_or_non_string_password(tmp_path, variant, password):
+    with lab.start(variant, tmp_path) as running:
+        body = {"user": "alice"} if password is None else {"user": "alice", "password": password}
+        assert running.raw_login(body).status_code == 401
+        assert running.raw_login({"user": "alice", "password": None}).status_code == 401
+        assert running.raw_login({"user": "alice", "password": running.passwords["alice"]}).status_code == 200
+
+
 def test_fixed_api_still_serves_owners_their_own_records(tmp_path):
     with lab.start("fixed", tmp_path) as running:
         bob = running.login("bob")

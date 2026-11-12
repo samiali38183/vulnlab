@@ -26,7 +26,7 @@ def get_invoice(object_id: int):
     if current_user() is None:  # who are you
         return jsonify(error="login required"), 401
     ...
-    return jsonify(invoices[object_id])  # line 38: no check that it is yours
+    return jsonify(invoices[object_id])  # line 41: no check that it is yours
 ```
 
 The same file does the ownership check correctly in the list route and in `PATCH`, which is what

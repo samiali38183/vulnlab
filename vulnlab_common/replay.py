@@ -92,7 +92,8 @@ def _correlate(
             if rule.type.name.lower() == "event_count":
                 measure = len(window)
             else:
-                measure = len({e.get(rule.condition.fieldref) for e in window})
+                values = (e.get(rule.condition.fieldref) for e in window)
+                measure = len({v for v in values if v is not None})  # a missing field is not a value
             if op(measure, rule.condition.count):
                 alerts.append(Alert(str(rule.title), key, window))
                 break

@@ -10,11 +10,16 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
+
+from vulnlab_common.guard import LoopbackSession
+from vulnlab_common.harness import serve
 from vulnlab_common.loader import load
 from vulnlab_common.replay import read_ndjson, replay
 
 HERE = Path(__file__).resolve().parent
 lab = load(HERE / "lab.py", "lab01_lab")
+fixed_module = load(HERE / "fixed" / "app.py", "lab01_fixed_for_tests")
 DETECTION = HERE / "detection"
 RULE = DETECTION / "web_ssrf_preview_internal_address.yml"
 RECORD = os.environ.get("VULNLAB_RECORD") == "1"
@@ -54,6 +59,66 @@ def test_fixed_service_still_previews_pages_and_follows_allowed_redirects(tmp_pa
         assert "Partner page" in followed.text
         if RECORD:
             shutil.copy(running.log_path, DETECTION / "sample_benign.ndjson")
+
+
+MALFORMED_URLS = {
+    "invalid port": "http://127.0.0.1:abc/",
+    "port out of range": "http://127.0.0.1:99999/",
+    "port zero": "http://127.0.0.1:0/",
+    "unterminated ipv6 literal": "http://[::1/",
+    "empty": "",
+    "scheme only": "http://",
+    "empty host": "http:///page",
+    "port without host": "http://:80/",
+    "no scheme": "127.0.0.1/page",
+    "userinfo": "http://user@127.0.0.1/",
+    "userinfo with password": "http://user:secret@127.0.0.1/",
+    "userinfo trick, allowed name first": "http://127.0.0.1@127.0.0.2/",
+    "userinfo trick, allowed name as user": "http://127.0.0.1:80@127.0.0.2/",
+    "ftp scheme": "ftp://127.0.0.1/",
+    "https scheme": "https://127.0.0.1/",
+    "file scheme": "file:///etc/passwd",
+    "javascript scheme": "javascript:alert(1)",
+    "overlong": "http://127.0.0.1/" + "a" * 3000,
+}
+
+
+@pytest.mark.parametrize("url", MALFORMED_URLS.values(), ids=MALFORMED_URLS.keys())
+def test_fixed_service_answers_400_to_every_malformed_url(tmp_path, url):
+    with lab.start("fixed", tmp_path) as running:
+        response = running.preview(url)
+        assert response.status_code == 400
+        assert response.json() == {"error": "invalid url"}
+        assert not running.internal_log.exists()
+
+
+@pytest.mark.parametrize("target", ["ftp://127.0.0.1/", "http://user@127.0.0.1/"])
+def test_fixed_service_answers_400_to_a_malformed_redirect_target(tmp_path, target):
+    with lab.start("fixed", tmp_path) as running:
+        response = running.preview(running.via_partner_redirect(target))
+        assert response.status_code == 400
+        assert not running.internal_log.exists()
+
+
+def test_fixed_service_keeps_403_for_well_formed_urls_on_other_hosts(tmp_path):
+    with lab.start("fixed", tmp_path) as running:
+        assert running.preview(running.internal_url).status_code == 403
+        assert running.preview("http://127.0.0.1.example.com/").status_code == 403
+
+
+def test_address_pinning_refuses_a_host_whose_address_is_not_approved():
+    """The host name is allowed but the address it resolves to is not: only the pinning check stops it."""
+    with serve(lab.services.partner_app()) as partner:
+        client = LoopbackSession()
+        permissive = fixed_module.create_app()
+        with serve(permissive) as target:
+            ok = client.get(f"{target.url}/preview", params={"url": partner.url + "/page"})
+            assert ok.status_code == 200
+        strict = fixed_module.create_app({"allowed_addrs": {"127.0.0.9"}})
+        with serve(strict) as target:
+            blocked = client.get(f"{target.url}/preview", params={"url": partner.url + "/page"})
+            assert blocked.status_code == 403
+            assert blocked.json() == {"error": "address not allowed"}
 
 
 def test_detection_rule_fires_on_recorded_attack_not_on_benign_traffic():

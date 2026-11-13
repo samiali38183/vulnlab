@@ -1,7 +1,7 @@
 # Lab 02: SQL injection in ORDER BY (CWE-89)
 
-A training lab. The bug is a textbook one, written for this repo. It is not vulnerability research
-and nothing here is a disclosure or a CVE.
+A training lab. The bug is a textbook one that I wrote for this repo. It is not vulnerability
+research, a disclosure or a CVE.
 
 ## The service
 
@@ -12,17 +12,17 @@ and a second `api_keys` table that holds a canary value. The endpoint is only me
 
 ## Root cause
 
-The search text is bound as a query parameter, so the author did the right thing for values. But
-placeholders cannot stand in for identifiers, so the sort column is pasted into the SQL string:
+The search text is bound as a query parameter, which is right for values. Placeholders cannot stand
+in for identifiers, though, so the sort column is pasted into the SQL string:
 
 ```python
 query = f"SELECT id, name, price FROM products WHERE name LIKE ? ORDER BY {sort} {direction}"  # line 16
 rows = conn.execute(query, (needle,)).fetchall()  # line 19
 ```
 
-`sort` comes straight from the query string. The `LIKE ?` parameter gives a false sense that the
-query is safe; the placeholder protects one position and the f-string opens another. `direction` is
-safe only because it is reduced to the literals `ASC` or `DESC` before use.
+`sort` comes straight from the query string. The `LIKE ?` parameter makes the query look safe, but
+the placeholder protects one position and the f-string opens another. `direction` is safe only
+because it is reduced to the literals `ASC` or `DESC` before use.
 
 ## What the proof shows
 
@@ -30,10 +30,10 @@ ORDER BY accepts an expression, not just a column. The test passes an expression
 depends on a condition about the `api_keys` table. The response is still a normal product list, but
 its row order switches depending on whether the condition holds: with a correct guess about the
 first character of the canary the rows come back in price order, with a wrong guess in name order.
-That is the whole point of the proof: data from a table the endpoint never returns changes what the
-endpoint returns. Repeating the question with other guesses would reveal the value one yes/no answer
-at a time; that follows from the oracle but is an inference, not something the test does. The test
-stops at demonstrating the first-character oracle; it does not recover the canary.
+So data from a table the endpoint never returns changes what the endpoint returns. Repeating the
+question with other guesses would reveal the value one yes/no answer at a time. I infer that from
+the oracle; the test does not do it. It stops at the first-character oracle and does not recover the
+canary.
 
 The same inputs against the fixed service get a 400 and no change in the output
 (`test_fixed_endpoint_rejects_non_column_sort_values`).
@@ -50,12 +50,11 @@ if column is None:
 ```
 
 The string interpolated into the SQL is the dictionary's value, which the application wrote, never
-the caller's text. This is the approach OWASP recommends for identifiers that cannot be
-parameterized.
+the caller's text. OWASP recommends this for identifiers that cannot be parameterized.
 
 The allow-list is exact, so the fixed endpoint is stricter than the vulnerable one: `Name` (wrong
 case), `1` (a column position) and `name,price` (a multi-column sort) were accepted before and now
-get 400. That is a deliberate behavior change; a client that needs multi-column sorting would need
+get 400. That is a deliberate behavior change. A client that needs multi-column sorting would need
 the map extended. `test_fixed_endpoint_is_stricter_than_the_vulnerable_one_on_legitimate_looking_values`
 pins it down.
 
@@ -87,8 +86,8 @@ in `sinkline/`.
 
 The vulnerable finding is correct and the flow is traced accurately. The fixed one is a false
 positive: sinkline treats a dictionary lookup against a constant allow-list as a passthrough, so it
-cannot tell the fix from the bug. Documented as a sinkline limitation (allow-list lookups are not
-recognized as sanitizers); the lab was not changed to avoid it.
+cannot tell the fix from the bug. That is a sinkline limitation (allow-list lookups are not
+recognized as sanitizers), and I left the lab as it was.
 
 ## References
 

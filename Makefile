@@ -18,6 +18,6 @@ lint:
 demo:
 	bash tools/demo.sh
 
-# Refresh the recorded detection samples from a real run of the tests.
+# Re-record the detection samples from a real test run.
 record:
 	VULNLAB_RECORD=1 $(PYTHON) -m pytest -q labs

@@ -4,24 +4,26 @@
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-A localhost-only lab of small, intentionally vulnerable web services. Each one has a minimal
-proof of impact, a fix with regression tests, a write-up of the bug class, a Sigma rule that
-sees the attempt in the service's access log, and a record of what a static analyzer
+Three small vulnerable web services that only run on localhost: SSRF, SQL injection and IDOR. Each
+one has a minimal proof of impact, a fix with regression tests, a write-up of the bug class, a Sigma
+rule that matches the attempt in the service's access log, and a record of what my static analyzer
 ([sinkline](https://github.com/samiali38183/sinkline)) does and does not report on it.
 
-The point of the lab is the comparison, not the bugs: three bug classes, each shown exploited, fixed, scanned by a taint analyzer and detected from the access log, with the cases where the analyzer and the detection rule are wrong left in. 137 tests pass in CI.
+I built it to compare the three tools on the same bugs: the exploit, the fix, the taint scan and
+the log rule. The places where sinkline or the rule gets it wrong are left in and written up. The
+suite has 137 tests and all of them pass.
 
 ## What it is and is not
 
-- It is a training lab. The bugs are textbook classes, written small so each fits on one screen.
+- It is a training lab. The bugs are textbook classes, written small enough to read on one screen.
 - It is not vulnerability research. There are no CVEs, no disclosures and no findings against
-  real software, and none are claimed.
-- It is not a scanner, an exploitation toolkit or a target to point at anything else. Everything
-  runs on 127.0.0.1 against services this repo starts itself. See `docs/SAFETY.md`.
+  real software.
+- It is not a scanner, an exploit kit or a target for anything else. Everything runs on 127.0.0.1
+  against services this repo starts itself. See `docs/SAFETY.md`.
 
 ## Quick start
 
-Python 3.12. No Docker; services are plain Python processes started by the tests.
+Python 3.12. There is no Docker: the tests start the services as plain Python processes.
 
 ```
 python -m venv .venv && . .venv/bin/activate     # Windows: .venv\Scripts\activate
@@ -29,16 +31,17 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-`make setup`, `make test`, and `make demo` wrap these. `make demo` runs lab 01 end to end: the
-proof test against the vulnerable service, the sinkline result, the same check against the fixed
-service, and the Sigma replay over the recorded logs. `requirements.lock` has the exact versions
-of a working install; `pyproject.toml` pins direct dependencies and installs sinkline and tripline
-from their GitHub tags.
+`make setup`, `make test` and `make demo` wrap these. `make demo` runs lab 01 from start to finish:
+the proof test against the vulnerable service, the sinkline scan, the same check against the fixed
+service, and the Sigma replay over the recorded logs. `requirements.lock` lists the exact versions
+of a working install. `pyproject.toml` pins the direct dependencies and installs sinkline and
+tripline from their GitHub tags.
 
 ## Labs
 
-Results below are from runs on 2026-11-11 (Windows 11, Python 3.12.2, pytest 9.2.0, sinkline
-0.5.0, tripline 0.2.1, pySigma 2.1.0). CI runs the same checks on Linux, including `ruff format --check`.
+Results below are from runs on 2026-11-13 (Windows 11, Python 3.12.2, pytest 9.2.0, sinkline
+0.5.0, tripline 0.2.1, pySigma 2.1.0). CI runs the same checks on Linux, plus `ruff check` and
+`ruff format --check`.
 
 | Lab | Bug class | CWE | Proof (vulnerable) | Fix verified | sinkline vulnerable / fixed | Detection rule |
 |---|---|---|---|---|---|---|
@@ -48,17 +51,17 @@ Results below are from runs on 2026-11-11 (Windows 11, Python 3.12.2, pytest 9.2
 
 65 more tests in `tests/` cover the loopback guard and harness (26), the recorded sinkline captures
 (13), the Sigma replay's correlation logic (13), the rule files (7) and the sinkline check tool (6).
-The lab columns above count every test in each lab directory. Total: 137 passing.
+The lab rows count every test in each lab directory. That makes 137 in total.
 
-Things worth reading in the results:
+What the results show:
 
-- sinkline finds the two injection-style bugs and traces the flow correctly, but it also reports
-  the fixed versions, because it does not recognize a custom allow-list or address check as a
-  sanitizer. Those two are documented as sinkline limitations; the labs were not changed to hide them.
+- sinkline finds the two injection-style bugs and traces the flow correctly. It also flags the fixed
+  versions, because it does not treat a custom allow-list or address check as a sanitizer. I count
+  those as sinkline limitations and did not change the labs to hide them.
 - sinkline reports nothing on lab 03, vulnerable or fixed. A missing authorization check is not a
-  taint flow. That is the limit of static taint analysis, and the write-up says so.
-- The detection rules see attempts, not outcomes: they fire on the fixed services too. Lab 03's
-  rule can only see behavior around the bug (many ids in a short time), not the bug itself.
+  taint flow, so a taint analyzer has nothing to follow. The write-up says so.
+- The detection rules see attempts, not outcomes, so they fire on the fixed services too. Lab 03's
+  rule only sees behavior around the bug (many ids in a short time), not the bug itself.
 
 ## Layout
 

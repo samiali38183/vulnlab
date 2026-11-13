@@ -1,7 +1,7 @@
 # Safety scope
 
-vulnlab contains intentionally vulnerable code. It is meant to be read, run and tested on your own
-machine only.
+vulnlab contains intentionally vulnerable code. Read it, run it and test it on your own machine
+only.
 
 ## Rules the repo enforces
 
@@ -26,6 +26,6 @@ machine only.
 
 - No real products, vendors or exploited CVEs are reproduced. The bugs are small, self-written
   examples of common classes.
-- No claim is made that this is vulnerability research, and there are no disclosure or CVE claims.
+- This is not vulnerability research, and there are no disclosures or CVEs.
 - The vulnerable apps have no hardening. Do not deploy them, expose them on a network, or reuse
   their code outside the lab.

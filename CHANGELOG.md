@@ -2,7 +2,7 @@
 
 ## 0.1.1
 
-Fixes from a review of 0.1.0. Training-lab scope only; no new attack content.
+Bug fixes and doc corrections after 0.1.0. No new attack content.
 
 - Lab 03 (both variants): login no longer issues a token to an unknown user with a missing or `null`
   password (`None != None`), and malformed login bodies (non-object, non-string fields) get 401
@@ -15,17 +15,17 @@ Fixes from a review of 0.1.0. Training-lab scope only; no new attack content.
   capture was regenerated because `fixed/app.py` line numbers moved; findings are unchanged.
 - Lab 01 tests: a new test fails if the resolved-address (pinning) check is removed; before, all
   tests stayed green without it.
-- Replay: a missing `value_count` field is no longer counted as a distinct value. Found by the new
-  unit tests for window boundaries, distinct counting, thresholds, ordering, empty logs and missing fields.
+- Replay: a missing `value_count` field is no longer counted as a distinct value. New unit tests for
+  window boundaries, distinct counting, thresholds, ordering, empty logs and missing fields found it.
 - New tests: every Sigma rule parses, compiles and has a positive and a negative sample; lab 02's
   stricter fixed behavior (`Name`, `1`, `name,price` rejected) is pinned down and documented.
 - `tools/sinkline_check.py` runs the active interpreter's sinkline and exits 2 on a version mismatch
   with `pyproject.toml`; `tools/demo.sh` does the same via `python -m sinkline`.
 - CI also runs `ruff format --check`.
-- The recorded sinkline captures had been regenerated as UTF-8 after 0.1.0 (PR #1, double-encoded
-  glyphs); that was not in the 0.1.0 notes. `tests/test_captures.py` guards it.
-- Docs: test counts corrected from real runs (137 passing; the README said 43), lab 01 line
-  reference, lab 02 wording about the oracle.
+- The recorded sinkline captures had double-encoded glyphs. PR #1 regenerated them as UTF-8 after
+  0.1.0, and that was missing from the 0.1.0 notes. `tests/test_captures.py` now checks for it.
+- Docs: the README said 43 tests and the real count is 137. Also fixed the lab 01 line reference
+  and the lab 02 wording about the oracle.
 
 ## 0.1.0
 

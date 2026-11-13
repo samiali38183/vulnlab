@@ -1,9 +1,15 @@
 # vulnlab
 
+[![ci](https://github.com/samiali38183/vulnlab/actions/workflows/ci.yml/badge.svg)](https://github.com/samiali38183/vulnlab/actions/workflows/ci.yml)
+![python](https://img.shields.io/badge/python-3.12-blue)
+![license](https://img.shields.io/badge/license-MIT-lightgrey)
+
 A localhost-only lab of small, intentionally vulnerable web services. Each one has a minimal
 proof of impact, a fix with regression tests, a write-up of the bug class, a Sigma rule that
 sees the attempt in the service's access log, and a record of what a static analyzer
 ([sinkline](https://github.com/samiali38183/sinkline)) does and does not report on it.
+
+The point of the lab is the comparison, not the bugs: three bug classes, each shown exploited, fixed, scanned by a taint analyzer and detected from the access log, with the cases where the analyzer and the detection rule are wrong left in. 137 tests pass in CI.
 
 ## What it is and is not
 

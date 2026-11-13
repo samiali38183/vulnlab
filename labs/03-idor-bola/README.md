@@ -1,7 +1,7 @@
 # Lab 03: IDOR / broken object-level authorization (CWE-639, OWASP API1:2023)
 
-A training lab. The bug is a textbook one, written for this repo. It is not vulnerability research
-and nothing here is a disclosure or a CVE.
+A training lab. The bug is a textbook one that I wrote for this repo. It is not vulnerability
+research, a disclosure or a CVE.
 
 ## The service
 
@@ -19,7 +19,7 @@ its memo. The lab's data is held in memory by the app; nothing touches the files
 
 ## Root cause
 
-Authentication is checked on the read-by-id route but authorization is not:
+The read-by-id route checks authentication but not authorization:
 
 ```python
 def get_invoice(object_id: int):
@@ -29,10 +29,10 @@ def get_invoice(object_id: int):
     return jsonify(invoices[object_id])  # line 41: no check that it is yours
 ```
 
-The same file does the ownership check correctly in the list route and in `PATCH`, which is what
-makes this bug realistic: each route re-implements the rule by hand, and one of them forgot. Sequential
-ids make the other users' records easy to find, but they are not the bug. Random ids would only
-make a missing check harder to exploit, not correct.
+The same file does the ownership check correctly in the list route and in `PATCH`. That is what
+makes the bug realistic: each route re-implements the rule by hand and one of them forgot.
+Sequential ids make other users' records easy to find, but they are not the bug. Random ids would
+only make the missing check harder to exploit.
 
 ## What the proof shows
 
@@ -58,18 +58,21 @@ def owned_invoice(object_id: int) -> dict:
 ```
 
 It authenticates first, then answers 404 both for "does not exist" and "exists but is not yours".
-So a caller with no valid token gets the same 401 for every id, and a logged-in caller gets the same
-404 for a missing id and for someone else's id: the responses do not confirm which ids are in use to
-either kind of caller. (Before 0.1.1 the ownership comparison ran first and skipped authentication
-for missing ids, so a caller with no token got 401 for an existing id and 404 for a missing one.) Because the check lives in one place, a new route that calls it
-inherits the rule, and the tests assert the behavior per route so a route that skips it fails.
-Regression tests also confirm owners can still read and update their own records and that
-unauthenticated requests get 401
+A caller with no valid token gets the same 401 for every id. A logged-in caller gets the same 404
+for a missing id and for someone else's id, so the responses never confirm which ids are in use.
+(Before 0.1.1 the ownership comparison ran first and skipped authentication for missing ids, so a
+caller with no token got 401 for an existing id and 404 for a missing one.)
+
+The check lives in one place, so a new route that calls it inherits the rule. The tests assert the
+behavior per route, so a route that skips it fails. Regression tests also confirm that owners can
+still read and update their own records and that unauthenticated requests get 401
 (`test_anonymous_callers_cannot_tell_existing_ids_from_missing_ones` compares an existing and a
-missing id on read and update). Login is covered by
-`test_login_rejects_unknown_users_and_malformed_bodies` for both variants: before 0.1.1 an unknown
-user with a missing or `null` password was issued a token (`None != None` is false) and a malformed
-body could crash the handler. That was incidental to the lab's bug and is fixed in both variants.
+missing id on read and update).
+
+Login is covered by `test_login_rejects_unknown_users_and_malformed_bodies` for both variants.
+Before 0.1.1 an unknown user with a missing or `null` password was issued a token (`None != None` is
+false), and a malformed body could crash the handler. That had nothing to do with the lab's bug and
+is fixed in both variants.
 
 ## Detection
 
@@ -97,12 +100,12 @@ in `sinkline/`.
 | vulnerable | 0 findings |
 | fixed | 0 findings |
 
-Nothing is reported on the vulnerable version, and that is the expected outcome. A missing
-authorization check is not a taint flow: no attacker-controlled value reaches a dangerous sink.
-The path parameter is used only as a dictionary key. Whether the caller is allowed to see the
-record is a property of the application's rules, which a source-to-sink analyzer has no model of.
-This is the honest boundary of static taint analysis, not a bug in sinkline. Finding this class
-takes authorization tests, a policy layer that fails closed, or review against an access matrix.
+Nothing is reported on the vulnerable version, which is what I expected. A missing authorization
+check is not a taint flow: no attacker-controlled value reaches a dangerous sink, and the path
+parameter is only used as a dictionary key. Whether the caller may see the record depends on the
+application's rules, and a source-to-sink analyzer has no model of those. This is the limit of
+static taint analysis, not a bug in sinkline. Finding this class takes authorization tests, a
+policy layer that fails closed, or a check against an access matrix.
 
 ## References
 

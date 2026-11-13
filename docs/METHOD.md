@@ -14,7 +14,7 @@ Each lab is a directory under `labs/` with the same files:
 - `detection/`: a Sigma rule over the lab's own access log, plus two recorded logs.
 - `sinkline/`: the captured scan output and `expected.json`.
 - `README.md`: root cause with the vulnerable line, what the proof shows, the fix and why it
-  works, detection and its limits, what sinkline reports, and sources.
+  works, detection and its limits, what sinkline reports, and references.
 
 ## What each test must establish
 
@@ -50,9 +50,9 @@ output and `expected.json` (rule ids, files, lines, tool version). CI runs
 `python tools/sinkline_check.py` and fails if any scan differs. It runs `python -m sinkline` of the
 active interpreter (never a `sinkline` found on PATH) and exits 2 before scanning if the installed
 version differs from the one pinned in `pyproject.toml`. If sinkline reports something
-unflattering, the lab is not changed; the README records it as a sinkline limitation.
+unflattering, I leave the lab alone and the README records it as a sinkline limitation.
 
 ## Adding a lab
 
-Copy a lab, keep the layout, write the bug small, then make each of the four statements above a
-test before writing the README. Every number in a README must come from a run you can repeat.
+Copy a lab, keep the layout, write the bug small, and turn each of the four statements above into a
+test before writing the README. Every number in a README has to come from a run you can repeat.

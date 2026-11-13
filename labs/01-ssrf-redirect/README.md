@@ -1,7 +1,7 @@
 # Lab 01: SSRF through an allowed host's redirect (CWE-918)
 
-A training lab. The bug is a textbook one, written for this repo. It is not vulnerability research
-and nothing here is a disclosure or a CVE.
+A training lab. The bug is a textbook one that I wrote for this repo. It is not vulnerability
+research, a disclosure or a CVE.
 
 ## The service
 
@@ -41,7 +41,7 @@ is never contacted.
 
 ## Fix
 
-`fixed/app.py` changes three things:
+`fixed/app.py` changes four things:
 
 1. Redirects are not followed by the HTTP client (`allow_redirects=False`). The app follows
    them itself, at most 3 hops, and runs the full check on every hop's URL.
@@ -56,16 +56,16 @@ is never contacted.
    `http://allowed@other/` look-alike trick), a non-http scheme, and a URL longer than 2048
    characters. Well-formed URLs for hosts or addresses that are not approved still get `403`.
 
-Why it works: the property being enforced is "every address this server connects to was approved",
-and that is checked at the point of connection for each hop instead of once at the front.
+The rule being enforced is "every address this server connects to was approved". It is now checked
+at the point of connection, on each hop, instead of once at the front.
 
-`test_fixed_service_answers_400_to_every_malformed_url` covers each malformed class above, and
+`test_fixed_service_answers_400_to_every_malformed_url` covers each malformed class above.
 `test_address_pinning_refuses_a_host_whose_address_is_not_approved` fails if the resolved-address
 check is removed: it allows the host name but approves a different address, so only the pinning
-check can refuse it. (Removing that check was run as a mutation to confirm the test fails.)
+check can refuse it. I removed that check by hand to confirm the test fails.
 
-`test_fixed_service_still_previews_pages_and_follows_allowed_redirects` guards against fixing it by
-breaking the feature: a redirect to an allowed page still works.
+`test_fixed_service_still_previews_pages_and_follows_allowed_redirects` catches a fix that breaks the
+feature: a redirect to an allowed page still works.
 
 ## Detection
 
@@ -81,8 +81,8 @@ Limits:
 - It sees the attempt, not the result. It fires on the fixed service too.
 - It misses internal targets named by hostname, and any address form not in the list (decimal,
   IPv6-mapped).
-- A first draft matched "nested redirect parameter in the url" in general. It also fired on the
-  benign redirect sample, so it was narrowed to internal-address literals.
+- My first draft matched any nested redirect parameter in the url. It also fired on the benign
+  redirect sample, so I narrowed it to internal-address literals.
 - The rule is replayed with tripline's compiler (`tripline` v0.2.1). Tripline's logsource router
   does not cover web-server logs, so it is bypassed and the rule is applied to the whole file.
 
@@ -97,11 +97,10 @@ in `sinkline/`.
 | fixed | 1 finding, SL-SSRF-001, same flow reported through `fetch()` at `app.py:53` |
 
 The vulnerable finding is correct. The fixed one is a false positive: sinkline does not model a
-project-specific validator, so it reports the flow as unsanitized. This is documented as a sinkline
-limitation (no recognition of custom allow-list and pinning logic) and the lab was not changed to
-avoid it. Also note that on the vulnerable version sinkline does not say that the bug is the
-redirect; it reports "tainted URL reaches `requests.get`", which would also be true of an app with
-no allow-list.
+project-specific validator, so it reports the flow as unsanitized. That is a sinkline limitation
+(it does not recognize custom allow-list and pinning logic), and I left the lab as it was. Also,
+on the vulnerable version sinkline does not say the bug is the redirect. It reports a tainted URL
+reaching `requests.get`, which would be just as true of an app with no allow-list at all.
 
 ## References
 

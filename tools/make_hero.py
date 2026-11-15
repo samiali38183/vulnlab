@@ -44,9 +44,7 @@ LABS = [
 
 
 def run_suite(junit: Path) -> None:
-    subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", f"--junitxml={junit}"], cwd=ROOT, check=False
-    )
+    subprocess.run([sys.executable, "-m", "pytest", "-q", f"--junitxml={junit}"], cwd=ROOT, check=False)
 
 
 def count_tests(junit: Path) -> tuple[Counter[str], int, int]:
@@ -76,9 +74,7 @@ def alerts(lab: str, sample: str) -> int:
 
 
 def box(ax, x, y, w, h, fc, ec=LINE, lw=1.5, r=1.2) -> None:
-    ax.add_patch(
-        FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}", fc=fc, ec=ec, lw=lw)
-    )
+    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}", fc=fc, ec=ec, lw=lw))
 
 
 def main() -> None:
@@ -95,10 +91,24 @@ def main() -> None:
     ax.set_ylim(0, 110)
     ax.axis("off")
 
-    ax.text(6, 101, "Three web bugs: exploited, fixed, checked twice", fontsize=20,
-            fontweight="bold", color=TEXT, va="center")
-    ax.text(6, 92, "Each lab is a small service that runs only on localhost, with a proof of impact, a fix, "
-            "a static scan and a log rule.", fontsize=10.6, color=MUTED, va="center")
+    ax.text(
+        6,
+        101,
+        "Three web bugs: exploited, fixed, checked twice",
+        fontsize=20,
+        fontweight="bold",
+        color=TEXT,
+        va="center",
+    )
+    ax.text(
+        6,
+        92,
+        "Each lab is a small service that runs only on localhost, with a proof of impact, a fix, "
+        "a static scan and a log rule.",
+        fontsize=10.6,
+        color=MUTED,
+        va="center",
+    )
 
     box(ax, 6, 19, 168, 66, PANEL)
     cols = [
@@ -143,20 +153,38 @@ def main() -> None:
             ax.text(x + 2, y + 8, big, fontsize=10.5, fontweight="bold", color=fg, va="center")
             ax.text(x + 2, y + 3.5, small, fontsize=8.3, color=TEXT, va="center")
 
-    ax.text(6, 14, "sinkline reports the fixed code too because it does not treat a custom allow-list as a "
-            "sanitizer. Lab 03 is not a taint flow.", fontsize=9.6, color=TEXT, va="center")
-    ax.text(6, 9, "Those misses are left in and written up, not hidden. Not vulnerability research: "
-            "textbook bug classes, no CVEs.", fontsize=8.8, color=MUTED, va="center")
-    ax.text(6, 4, f"{passed} of {total} tests pass. Run {datetime.date.today()}.  Source: pytest run, "
-            "labs/*/sinkline/expected.json, Sigma replay.  Reproduce: python tools/make_hero.py",
-            fontsize=8, color=MUTED, va="center")
+    ax.text(
+        6,
+        14,
+        "sinkline reports the fixed code too because it does not treat a custom allow-list as a "
+        "sanitizer. Lab 03 is not a taint flow.",
+        fontsize=9.6,
+        color=TEXT,
+        va="center",
+    )
+    ax.text(
+        6,
+        9,
+        "Those misses are left in and written up, not hidden. Not vulnerability research: "
+        "textbook bug classes, no CVEs.",
+        fontsize=8.8,
+        color=MUTED,
+        va="center",
+    )
+    ax.text(
+        6,
+        4,
+        f"{passed} of {total} tests pass. Run {datetime.date.today()}.  Source: pytest run, "
+        "labs/*/sinkline/expected.json, Sigma replay.  Reproduce: python tools/make_hero.py",
+        fontsize=8,
+        color=MUTED,
+        va="center",
+    )
 
     out = ROOT / "docs" / "img" / "hero.png"
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=200, facecolor="white")
-    Image.open(out).convert("RGB").quantize(colors=64, dither=Image.Dither.NONE).save(
-        out, optimize=True
-    )
+    Image.open(out).convert("RGB").quantize(colors=64, dither=Image.Dither.NONE).save(out, optimize=True)
     print(f"wrote {out}  ({passed}/{total} tests)")
 
 

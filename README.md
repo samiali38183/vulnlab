@@ -4,6 +4,16 @@
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
+**A lab of three small vulnerable web services that run only on localhost. Each bug is exploited, fixed, scanned by a static analyzer and matched by a log detection rule, and the results of all four are recorded.**
+
+![Table for three labs (SSRF via redirect, SQL injection, IDOR). Proof and fix: 26, 9 and 37 lab tests pass. sinkline scan on vulnerable and fixed code: 1 and 1 findings for SSRF and SQL injection (a correct finding, then a false alarm on the fix), 0 and 0 for IDOR because it is not a taint flow. Sigma log rule: 1 alert on the attack log and 0 on the benign log for all three.](docs/img/hero.png)
+
+*All 137 tests pass. Each bug is proven on the vulnerable service and blocked on the fixed one, and the places where my static analyzer gets it wrong are left in and written up.*
+
+**What it does, in plain terms.** For each of three common web bugs there is a tiny app that has the bug and a second copy with the fix. Tests show the attack working on the first and failing on the second. Then two security tools are pointed at the same bug, a code scanner and a rule that watches the web server's log, to see what each one catches and misses.
+
+## Technical overview
+
 Three small vulnerable web services that only run on localhost: SSRF, SQL injection and IDOR. Each
 one has a minimal proof of impact, a fix with regression tests, a write-up of the bug class, a Sigma
 rule that matches the attempt in the service's access log, and a record of what my static analyzer

@@ -23,6 +23,32 @@ I built it to compare the three tools on the same bugs: the exploit, the fix, th
 the log rule. The places where sinkline or the rule gets it wrong are left in and written up. The
 suite has 137 tests and all of them pass.
 
+## Design
+
+- Each lab is two Flask apps with the same routes: `labs/NN-name/vulnerable/app.py` has the bug,
+  `labs/NN-name/fixed/app.py` has the fix. `lab.py` loads one variant by path
+  (`vulnlab_common/loader.py`) and starts it, plus any helper services the lab needs, on
+  127.0.0.1 with an ephemeral port (`vulnlab_common/harness.py`).
+- Proofs are ordinary pytest tests in `labs/NN-name/test_lab.py`. The proof test starts the
+  vulnerable variant, performs the attack and asserts on a per-run random canary in the
+  response; the same test body against the fixed variant asserts the canary is absent and the
+  request is refused. CI runs them with `pytest -q` (`.github/workflows/ci.yml`).
+- The harness writes an NDJSON access log per service (`vulnlab_common/harness.py`). With
+  `VULNLAB_RECORD=1` the proof runs re-record `detection/sample_*.ndjson`; the Sigma tests replay
+  the recorded attack and benign logs and assert on the alert count.
+- `vulnlab_common/replay.py` parses the rule with pySigma and evaluates single-event rules with
+  tripline's compiler; `event_count`/`value_count` correlation rules (lab 03) are windowed by
+  replay.py's own code, because tripline does not implement correlation. `sigma check`
+  validates the rule files in CI.
+- `tools/sinkline_check.py` runs `sinkline scan` on each variant from the lab directory and
+  compares the `(rule_id, file, line)` set with `labs/NN-name/sinkline/expected.json`; CI fails
+  on any difference or on a sinkline version other than the one pinned in `pyproject.toml`.
+  `--capture` regenerates `expected.json` and the `.txt` transcripts.
+- Localhost-only guard: `vulnlab_common/guard.py` accepts only literal loopback addresses or
+  `localhost` (no DNS), `LoopbackSession` checks every URL before sending and never follows
+  redirects, and the harness refuses to bind anywhere else. `tests/test_safety.py` checks all
+  three and that lab tests use only the guarded client.
+
 ## What it is and is not
 
 - It is a training lab. The bugs are textbook classes, written small enough to read on one screen.
